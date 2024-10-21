@@ -22,14 +22,16 @@ def getSegAddr():
     textEnd = []
 
     for seg in idautils.Segments():
-        if (idc.get_segm_name(seg)).lower() == '.text' or (
-        idc.get_segm_name(seg)).lower() == 'text':
+        if (idc.get_segm_name(seg)).lower() == '.text' or (idc.get_segm_name(seg)).lower() == '__text':
             tempStart = idc.get_segm_start(seg)
             tempEnd = idc.get_segm_end(seg)
 
             textStart.append(tempStart)
             textEnd.append(tempEnd)
+            break
 
+    print(hex(min(textStart)))
+    print(hex(min(textEnd)))
     return min(textStart), max(textEnd)
 
 
@@ -41,17 +43,17 @@ class traceNatives(plugin_t):
     wanted_hotkey = ""
 
     def init(self):
-        print("traceNatives(v0.1) plugin has been loaded.")
+        print("traceNatives(v0.2) plugin has been loaded.")
         return PLUGIN_OK
 
-    def run(self, arg):
-        # 查找需要的函数
+    def run(self, arg):        
+        #getSegAddr()
         ea, ed = getSegAddr()
         search_result = []
         for func in idautils.Functions(ea, ed):
             try:
                 functionName = str(idaapi.ida_funcs.get_func_name(func))
-                if len(list(idautils.FuncItems(func))) > 10:
+                if len(list(idautils.FuncItems(func))) > 100:
                     # 如果是thumb模式，地址+1
                     arm_or_thumb = idc.get_sreg(func, "T")
                     if arm_or_thumb:
@@ -78,3 +80,5 @@ class traceNatives(plugin_t):
 
 def PLUGIN_ENTRY():
     return traceNatives()
+
+
